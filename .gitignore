@@ -1,0 +1,11 @@
+agent_evaluations
+populations/*
+!populations/.dummy
+populations_no_eval
+.pyc
+.DS_store
+.idea
+*~
+__pycache__
+ChristianPlayer.py
+christian-chromosomes
