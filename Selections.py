@@ -120,8 +120,8 @@ class IslandTournamentSelection(BaseTournamentSelection):
         super(IslandTournamentSelection, self).__init__(Player, island_count * chromosomes_per_island, pop_init,
                                                         recombine, mutate)
         self.island_count = island_count
-        self.chromosome_per_island = chromosomes_per_island
-        self.population = self.population.resize((island_count, chromosomes_per_island, -1))
+        self.chromosomes_per_island = chromosomes_per_island
+        self.population = self.population.reshape((island_count, chromosomes_per_island, -1))
         self.migration_count = migration_count
         self.generations_per_epoch = generations_per_epoch
         self.games_per_tournament = games_per_tournament
@@ -130,19 +130,19 @@ class IslandTournamentSelection(BaseTournamentSelection):
     def next_generation(self):
         for island_id in range(self.island_count):
             np.random.shuffle(self.all_island_chromosome_ids)
-            for tournament_id in range(self.chromosome_per_island // 4):
+            for tournament_id in range(self.chromosomes_per_island // 4):
                 chromosome_ids = self.all_island_chromosome_ids[tournament_id * 4:tournament_id * 4 + 4]
-                chromosome_ids += island_id * self.chromosome_per_island
+                chromosome_ids = chromosome_ids + island_id * self.chromosomes_per_island
                 self.play_tournament(chromosome_ids, self.games_per_tournament)
         if self.current_generation % self.generations_per_epoch == 0:
             self.migrate()
 
     def migrate(self):
         # pick self.migration_count on each island and shuffle those chromosomes
-        migrant_ids = np.array((self.island_count, self.migration_count), dtype=np.int)
+        migrant_ids = np.empty((self.island_count, self.migration_count), dtype=np.int)
         for island_id in range(self.island_count):
             migrant_ids[island_id] = np.random.choice(self.all_island_chromosome_ids, self.migration_count,
-                                                      replace=False)
+                                                      replace=False) + island_id * self.chromosomes_per_island
         old_migrant_ids = migrant_ids.reshape(-1)
         new_migrant_ids = old_migrant_ids.copy()
         np.random.shuffle(new_migrant_ids)
